@@ -2,12 +2,12 @@
 
 set -e
 
-# setup local hooks
-[ -d .git ] && git config core.hooksPath .githooks
 
 DT_SRC_DIR=$(dirname "$0")
 DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)
 
+# setup local hooks
+[ -d "${DT_SRC_DIR}/.git" ] && git -C "$DT_SRC_DIR" config core.hooksPath .githooks
 
 # ---------------------------------------------------------------------------
 # Set default values to option vars
@@ -123,7 +123,8 @@ parse_args()
 			;;
 		--)
 			shift
-			CMAKE_OPTIONS_FROM_CMDLINE="$@"
+			# Allow whitespace in params
+			CMAKE_OPTIONS_FROM_CMDLINE=$(printf ' %q' "$@")
 			break
 			;;
 		*)
@@ -224,7 +225,7 @@ num_cpu()
 			ncpu=$(grep -c "^processor" /proc/cpuinfo)
 		elif [ -x /sbin/sysctl ]; then
 			ncpu=$(/sbin/sysctl -n hw.ncpu 2>/dev/null)
-			if [ $? -neq 0 ]; then
+			if [ $? -ne 0 ]; then
 				ncpu=-1
 			fi
 		fi
